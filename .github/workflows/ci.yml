@@ -33,7 +33,7 @@ jobs:
                     go build -o ./build/exwrap ./cmd/exwrap/
             -   name: Generate Artifacts
                 if: '!cancelled()'
-                uses: actions/upload-artifact@v2
+                uses: actions/upload-artifact@v4
                 with:
                     name: exwrap-linux-${{ github.run_id }}.zip
                     path: ${{github.workspace}}/build
@@ -64,7 +64,7 @@ jobs:
                     go build -o ./build/exwrap ./cmd/exwrap/
             -   name: Generate Artifacts
                 if: '!cancelled()'
-                uses: actions/upload-artifact@v2
+                uses: actions/upload-artifact@v4
                 with:
                     name: exwrap-macos-${{ github.run_id }}.zip
                     path: ${{github.workspace}}/build
@@ -95,7 +95,7 @@ jobs:
                     go build -o ./build/exwrap.exe ./cmd/exwrap/
             -   name: Generate Artifacts
                 if: '!cancelled()'
-                uses: actions/upload-artifact@v2
+                uses: actions/upload-artifact@v4
                 with:
                     name: exwrap-windows-${{ github.run_id }}.zip
                     path: ${{github.workspace}}/build
