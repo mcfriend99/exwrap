@@ -56,3 +56,10 @@ cp -r ./pkg ./build/linux/arm64/pkg
 cp -r ./pkg ./build/darwin/amd64/pkg
 cp -r ./pkg ./build/darwin/arm64/pkg
 
+# Fix executables
+find ./build -name "*-386" -exec chmod +x {} \;
+find ./build -name "*-amd64" -exec chmod +x {} \;
+find ./build -name "*-arm" -exec chmod +x {} \;
+find ./build -name "*-arm64" -exec chmod +x {} \;
+find ./build -name "*exwrap" -exec chmod +x {} \;
+
