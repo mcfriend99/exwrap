@@ -1,0 +1,101 @@
+name: CI
+
+on:
+    push:
+        branches: [ main, dev ]
+    pull_request:
+        branches: [ main ]
+
+jobs:
+    build-linux:
+        runs-on: ubuntu-20.04
+        permissions:
+            actions: read
+            contents: read
+            security-events: write
+        steps:
+            -   uses: actions/checkout@v2
+            -   name: Setup Go 1.21.x
+                uses: actions/setup-go@v5
+                with:
+                    go-version: '1.21.x'
+            -   name: Install dependencies
+                run: |
+                    go get github.com/maja42/ember/
+            -   name: Generate PKGs
+                run: |
+                    mkdir -p pkg
+                    ./scripts/build-pkg.sh
+                    mkdir -p build
+                    mv pkg build/pkg
+            -   name: Build
+                run: |
+                    go build -o ./build/exwrap ./cmd/exwrap/
+            -   name: Generate Artifacts
+                if: '!cancelled()'
+                uses: actions/upload-artifact@v2
+                with:
+                    name: exwrap-linux-${{ github.run_id }}.zip
+                    path: ${{github.workspace}}/build
+
+    build-macos:
+        runs-on: macos-latest
+        permissions:
+            actions: read
+            contents: read
+            security-events: write
+        steps:
+            -   uses: actions/checkout@v2
+            -   name: Setup Go 1.21.x
+                uses: actions/setup-go@v5
+                with:
+                    go-version: '1.21.x'
+            -   name: Install dependencies
+                run: |
+                    go get github.com/maja42/ember/
+            -   name: Generate PKGs
+                run: |
+                    mkdir -p pkg
+                    ./scripts/build-pkg.sh
+                    mkdir -p build
+                    mv pkg build/pkg
+            -   name: Build
+                run: |
+                    go build -o ./build/exwrap ./cmd/exwrap/
+            -   name: Generate Artifacts
+                if: '!cancelled()'
+                uses: actions/upload-artifact@v2
+                with:
+                    name: exwrap-macos-${{ github.run_id }}.zip
+                    path: ${{github.workspace}}/build
+
+    build-windows:
+        runs-on: windows-latest
+        permissions:
+            actions: read
+            contents: read
+            security-events: write
+        steps:
+            -   uses: actions/checkout@v2
+            -   name: Setup Go 1.21.x
+                uses: actions/setup-go@v5
+                with:
+                    go-version: '1.21.x'
+            -   name: Install dependencies
+                run: |
+                    go get github.com/maja42/ember/
+            -   name: Generate PKGs
+                run: |
+                    mkdir -p pkg
+                    .\scripts\build-pkg.cmd
+                    mkdir -p build
+                    mv pkg build/pkg
+            -   name: Build
+                run: |
+                    go build -o ./build/exwrap.exe ./cmd/exwrap/
+            -   name: Generate Artifacts
+                if: '!cancelled()'
+                uses: actions/upload-artifact@v2
+                with:
+                    name: exwrap-windows-${{ github.run_id }}.zip
+                    path: ${{github.workspace}}/build
