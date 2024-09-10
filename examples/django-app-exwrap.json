@@ -1,0 +1,11 @@
+{
+    "root": "/Users/myuser/PythonVenv/projects/ecc",
+    "entry_point" : [".venv/bin/python", "ecc-admin.py"],
+    "exclude_dirs": ["/Users/myuser/PythonVenv/projects/ecc/.git", "/Users/myuser/PythonVenv/projects/ecc/uploads"],
+    "exclude_files": ["test/test.py"],
+    "extra_dirs": {
+        "/opt/homebrew/Cellar/python@3.10/3.10.13_2/Frameworks/Python.framework/Versions/3.10/lib/python3.10": ".venv/lib/python3.10"
+    },
+    "executables": [".venv/bin/python"],
+    "icon": "/Users/myuser/PythonVenv/projects/ecc/icons/ecc-admin"
+}
