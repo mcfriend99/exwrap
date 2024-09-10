@@ -10,7 +10,7 @@ jobs:
         strategy:
             matrix:
                 os: [darwin, linux, windows]
-                arch: [386, amd, arm, arm64]
+                arch: [386, amd64, arm, arm64]
             fail-fast: false
         runs-on: ubuntu-20.04
         permissions:
