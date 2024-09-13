@@ -157,7 +157,7 @@ func getLaunchScriptTempName() string {
 	return fmt.Sprintf("%s.json", EmbededLaunchScript)
 }
 
-func getLaunchScriptDarwinName(config Config) string {
+func getLaunchScriptForDarwinApp(config Config) string {
 	return fmt.Sprintf("%s.launch", config.TargetName)
 }
 

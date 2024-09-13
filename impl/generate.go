@@ -79,17 +79,30 @@ func generateAttachments(config Config) map[string]string {
 	return attachments
 }
 
-func Generate(config Config, cmd CommandLine) {
+func Generate(config Config, cmd CommandLine) string {
+	// ensure we're trying to build a supported os/arch combination.
+	failFormat := "Unsupported Os/Arch combination: %s/%s"
+	if combo, ok := BuildCombinations[OSArch{config.TargetOs, config.TargetArch}]; ok {
+
+		// For now, we're only supporting first-class build targets.
+		// TODO: Support non first-class targets
+		if !combo.FirstClass {
+			log.Fatalf(failFormat, config.TargetOs, config.TargetArch)
+		}
+	} else {
+		log.Fatalf(failFormat, config.TargetOs, config.TargetArch)
+	}
+
 	_ = os.RemoveAll(getBuildDir(cmd))
 
-	if config.TargetOs == "darwin" {
-		GenerateDarwin(config, cmd)
+	if config.TargetOs == "darwin" && config.Darwin.CreateApp {
+		return GenerateDarwin(config, cmd)
 	} else {
-		GenerateDefault(config, cmd)
+		return GenerateDefault(config, cmd)
 	}
 }
 
-func GenerateDefault(config Config, cmd CommandLine) {
+func GenerateDefault(config Config, cmd CommandLine) string {
 	if err := os.MkdirAll(getBuildDir(cmd), os.ModePerm); err == nil {
 		attachments := generateAttachments(config)
 
@@ -174,17 +187,17 @@ func GenerateDefault(config Config, cmd CommandLine) {
 		os.Remove(setupName)
 		os.Remove(launchName)
 
-		// TODO: Wrap proper app for darwin.
+		return targetExe
 	} else {
 		log.Fatalln("Failed to create build directory!")
 	}
+
+	return ""
 }
 
-func GenerateDarwin(config Config, cmd CommandLine) {
+func GenerateDarwin(config Config, cmd CommandLine) string {
 	if err := os.MkdirAll(getBuildDir(cmd), os.ModePerm); err == nil {
 		attachments := generateAttachments(config)
-
-		// create target app
 
 		// create build archive target
 		targetArchive := getTargetBuildArchive(config, cmd)
@@ -228,7 +241,7 @@ func GenerateDarwin(config Config, cmd CommandLine) {
 		clear(attachments)
 
 		// Create the launch script
-		launchScript := path.Join(macosDir, getLaunchScriptDarwinName(config))
+		launchScript := path.Join(macosDir, getLaunchScriptForDarwinApp(config))
 
 		if data, err := json.Marshal(config.EntryPoint); err == nil {
 			if err = os.WriteFile(launchScript, data, fs.ModePerm); err != nil {
@@ -250,7 +263,7 @@ func GenerateDarwin(config Config, cmd CommandLine) {
 		}
 
 		// Create the info.plist file
-		if data, err := os.ReadFile(config.PlistFile); err == nil {
+		if data, err := os.ReadFile(config.Darwin.PlistFile); err == nil {
 			data = []byte(strings.ReplaceAll(string(data), "${EXE}", config.TargetName))
 
 			if err = os.WriteFile(path.Join(targetArchive, "Contents", "Info.plist"), data, os.ModePerm); err != nil {
@@ -267,7 +280,11 @@ func GenerateDarwin(config Config, cmd CommandLine) {
 				// do nothing (because apps will still run without their icons)...
 			}
 		}
+
+		return targetArchive
 	} else {
 		log.Fatalln("Failed to create build directory:", err.Error())
 	}
+
+	return ""
 }

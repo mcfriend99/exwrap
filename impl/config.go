@@ -9,6 +9,15 @@ import (
 	"strings"
 )
 
+type DarwinConfig struct {
+	// Allows user to point to their own plist file for macos.
+	PlistFile string `json:"plist,omitempty"`
+
+	// When true, exwrap generates and app bundle instead of an installer.
+	// Default: false
+	CreateApp bool `json:"create_app,omitempty"`
+}
+
 type Config struct {
 	// The root of the entire application.
 	// Defaults to the current working directory.
@@ -76,15 +85,15 @@ type Config struct {
 	// when installation is extracted.
 	Executables []string `json:"executables,omitempty"`
 
-	// Allows user to point to their own plist file for macos.
-	PlistFile string `json:"plist,omitempty"`
-
 	// The application icon. This path should omit the extension as
 	// exwrap will add the appropriate extension to the file.
 	// Best practice is to have the icon in .icns (MacOS),
 	// .ico (Windows), and .svg (Linux) format in a directory with
 	// the same name
 	Icon string `json:"icon,omitempty"`
+
+	// Darwin (MacOS) specific configurations.
+	Darwin DarwinConfig `json:"mac_os,omitempty"`
 }
 
 func LoadConfig(cmd CommandLine) Config {
@@ -115,6 +124,12 @@ func LoadConfig(cmd CommandLine) Config {
 			log.Fatalln("Failed to resolve root directory:", err.Error())
 		}
 	}
+
+	// ensure some major compatibilities
+	config.SourceOs = strings.ToLower(config.SourceOs)
+	config.SourceArch = strings.ToLower(config.SourceArch)
+	config.TargetOs = strings.ToLower(config.TargetOs)
+	config.TargetArch = strings.ToLower(config.TargetArch)
 
 	// set defaults
 	if config.TargetName == "" {
@@ -212,8 +227,8 @@ func LoadConfig(cmd CommandLine) Config {
 		config.ExcludeFiles = newList
 	}
 
-	if config.PlistFile == "" {
-		config.PlistFile = path.Join(getResourcesDirectory(), "Info.plist")
+	if config.Darwin.PlistFile == "" {
+		config.Darwin.PlistFile = path.Join(getResourcesDirectory(), "Info.plist")
 	}
 
 	return config
