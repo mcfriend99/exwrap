@@ -29,6 +29,8 @@ Though there are numerous systems available today that attempts to solve the pro
   - [x] ARM
   - [x] ARM64
 - [x] Cross-platform executable generation
+- [x] Pre-Install commands
+- [x] Post-Install commands
 
 ## Installation
 
@@ -38,7 +40,7 @@ To build it yourself, simply run the `scripts/build.sh` (for Linux and MacOS use
 
 > **NOTE:**
 > 
-> You may also need to add `ExWrap` to PATH.
+> You may also need to add `exwrap` to PATH.
 
 ## Configuration
 
@@ -68,20 +70,18 @@ exwrap -dir MyCustomBuildDirectory
 
 You can type `exwrap --help` for more.
 
-## Notice
+## NOTICE
 
-> **NOTICE:**
+> **Notice for all users**
+>
+> - When the installers are run, they'll automatically install the app into the configured install directory (or `C:\Program Files\<app name>` and `/home/$USERNAME/<app name>` for Windows and Linux respectively if none is configured).
+> - The name of the executable will be the name set in `target_name` or the name of the root directory if `target_name` is not set.
+
+> **Notice For MacOS users:**
 > 
-> - For MacOS, `ExWrap` currently generates an application (`.app`) 
-> file while for Windows and Linux, it generates an installer by 
-> default. This is deliberate as there is currently no efficient 
-> cross-platform way to programmatically create DMG file on other
-> operating systems without need for users to install extra 
-> dependencies which may of their own introduce new bottlenecks.
-> - When the installers are run, they'll automatically 
-> install the app into the configured install directory (or 
-> `C:\Program Files\<app name>` and `/home/$USERNAME/<app name>` 
-> for Windows and Linux respectively if none is configured).
+> - While `ExWrap` generates an installer Windows and Linux, for MacOS, it does not generate a DMG based installer but rather an executable installer. This is deliberate as there is currently no efficient cross-platform way to programmatically create DMG file on other operating systems without need for users to install extra dependencies which may of their own introduce new bottlenecks.
+> - For this reason, `ExWrap` has been enabled with the capability to generate an application (`.app`) file as an opt-in. To enable this, set the darwin > create_app config to `true`.
+
 
 ## Contributing
 
