@@ -149,8 +149,11 @@ func GenerateDefault(config Config, cmd CommandLine) string {
 
 		// Create the setup script
 		setupScript := SetupScript{
-			InstallDirectory: config.InstallPath,
-			Executables:      config.Executables,
+			InstallDirectory:    config.InstallPath,
+			Executables:         config.Executables,
+			ExeName:             config.TargetName,
+			PreInstallCommands:  config.PreInstallCommands,
+			PostInstallCommands: config.PostInstallCommands,
 		}
 		setupName := getBuildSetupScriptName(cmd)
 		if data, err := json.Marshal(setupScript); err == nil {
@@ -250,6 +253,9 @@ func GenerateDarwin(config Config, cmd CommandLine) string {
 		} else {
 			log.Fatalln("Failed to create launch script:", err.Error())
 		}
+
+		// indicate this is a darwin app
+		_ = os.WriteFile(path.Join(macosDir, DarwinAppLockfile), []byte{}, os.ModePerm)
 
 		srcWrapper := getPkgExeFromConfig(config)
 		targetExe := path.Join(macosDir, config.TargetName)

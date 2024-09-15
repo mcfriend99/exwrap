@@ -5,6 +5,7 @@ const (
 	DefaultBuildDirectory = "build"
 	AppArchiveName        = "app.zip"
 	DarwinAppArchiveName  = "app.app"
+	DarwinAppLockfile     = ".exdarwin"
 	AppEmbedExeName       = "embed"
 	EmbededArchiveName    = "archive"
 	EmbededSetupScript    = "setup"

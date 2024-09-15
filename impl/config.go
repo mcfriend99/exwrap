@@ -31,10 +31,11 @@ type Config struct {
 	// Defaults to the name of the root folder.
 	TargetName string `json:"target_name,omitempty"`
 
-	// Not used at the moment
-	PostInstallCommand string `json:"post_install_cmd,omitempty"`
-	// Not used at the moment
-	PreInstallCommand string `json:"pre_install_cmd,omitempty"`
+	// A list of commands to be run in order before installation begins
+	PostInstallCommands []string `json:"post_install_cmds,omitempty"`
+
+	// A list of commands to be run in order after installation completes.
+	PreInstallCommands []string `json:"pre_install_cmds,omitempty"`
 
 	// The OS on which exwrap is being run on (Defaults to your OS)
 	SourceOs string `json:"source_os,omitempty"`
@@ -229,6 +230,14 @@ func LoadConfig(cmd CommandLine) Config {
 
 	if config.Darwin.PlistFile == "" {
 		config.Darwin.PlistFile = path.Join(getResourcesDirectory(), "Info.plist")
+	}
+
+	if config.PreInstallCommands == nil {
+		config.PreInstallCommands = make([]string, 0)
+	}
+
+	if config.PostInstallCommands == nil {
+		config.PostInstallCommands = make([]string, 0)
 	}
 
 	return config

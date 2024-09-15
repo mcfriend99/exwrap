@@ -8,11 +8,17 @@ import (
 	"os/exec"
 	"path"
 	"runtime"
+	"strings"
 
 	"github.com/maja42/ember"
 	"github.com/maja42/ember/embedding"
 	"github.com/mcfriend99/exwrap/impl"
 )
+
+type output struct {
+	out []byte
+	err error
+}
 
 func damaged(err error) {
 	log.Fatalln("Damaged executable:", err.Error())
@@ -98,12 +104,29 @@ func install(setup impl.SetupScript, launch impl.LaunchScript) {
 	_ = os.RemoveAll(target)
 	os.MkdirAll(target, 0755)
 
+	workingDir, err := os.Getwd()
+	if err != nil {
+		log.Fatalln("Could not determine current path")
+	}
+
+	// we are entring the target directory incase any pre-install
+	// or post-install command depends on that (or use relative paths)
+	err = os.Chdir(target)
+	if err != nil {
+		log.Fatalln("Could not resolve target path")
+	}
+
+	// run pre-install commands
+	if len(setup.PreInstallCommands) > 0 {
+		runSetupCommand(target, setup.PreInstallCommands)
+	}
+
 	if err := impl.Unzip(impl.GetInstallExtractFile(), target); err != nil {
 		damaged(err)
 	}
 
 	if exe, err := os.Executable(); err == nil {
-		exeTarget := path.Join(target, path.Base(exe))
+		exeTarget := path.Join(target, setup.ExeName)
 		if impl.FileExists(exeTarget) {
 			_ = os.RemoveAll(exeTarget)
 		}
@@ -132,6 +155,17 @@ func install(setup impl.SetupScript, launch impl.LaunchScript) {
 
 	_ = os.RemoveAll(impl.GetInstallExtractDir())
 
+	// run post-install commands
+	if len(setup.PostInstallCommands) > 0 {
+		runSetupCommand(target, setup.PostInstallCommands)
+	}
+
+	err = os.Chdir(workingDir)
+	if err != nil {
+		// TODO: decide what to do here.
+		// For now, do nothing...
+	}
+
 	log.Println("Installation Completed!")
 }
 
@@ -144,24 +178,23 @@ func launchApp() {
 		log.Fatalln("Missing entrypoint.")
 	}
 
-	type output struct {
-		out []byte
-		err error
-	}
-
 	ch := make(chan output)
 
 	go func() {
 		// move into app directory
+		hasDarwinAppLock := impl.FileExists(path.Join(appDir, impl.DarwinAppLockfile))
 
 		runtimeDir := appDir
-		if runtime.GOOS == "darwin" {
+		if runtime.GOOS == "darwin" && hasDarwinAppLock {
 			runtimeDir = path.Join(appDir, "../Resources")
 		}
 		os.Chdir(runtimeDir)
 
 		var cmd *exec.Cmd
-		program := impl.GetAbsoluteCommandProgram(command[0], runtime.GOOS == "darwin")
+		program := impl.GetAbsoluteCommandProgram(
+			command[0],
+			runtime.GOOS == "darwin" && hasDarwinAppLock,
+		)
 
 		if len(command) > 1 {
 			cmd = exec.Command(program, command[1:]...)
@@ -177,6 +210,33 @@ func launchApp() {
 	case x := <-ch:
 		if x.err != nil {
 			log.Fatalln(x.err.Error())
+		}
+	}
+}
+
+func runSetupCommand(root string, commands []string) {
+	if len(commands) == 0 {
+		return
+	}
+
+	for _, cmd := range commands {
+		command := strings.Split(cmd, " ")
+		if len(command) == 0 {
+			continue
+		}
+
+		var cmd *exec.Cmd
+		program := path.Join(root, command[0])
+
+		if len(command) > 1 {
+			cmd = exec.Command(program, command[1:]...)
+		} else {
+			cmd = exec.Command(program)
+		}
+
+		_, err := cmd.CombinedOutput()
+		if err != nil {
+			log.Fatalln(err.Error())
 		}
 	}
 }
