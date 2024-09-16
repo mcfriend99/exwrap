@@ -9,6 +9,7 @@ import (
 	"strings"
 )
 
+// MacOS specific configuration
 type DarwinConfig struct {
 	// Allows user to point to their own plist file for macos.
 	PlistFile string `json:"plist,omitempty"`

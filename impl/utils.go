@@ -11,8 +11,8 @@ import (
 	"strings"
 )
 
-var CachedAppDir string = ""
-var CachedBuildDir string = ""
+var cachedAppDir string = ""
+var cachedBuildDir string = ""
 
 func listFiles(root string) []string {
 	files := make([]string, 0)
@@ -178,14 +178,14 @@ func getBuildDir(cmd CommandLine) string {
 		return cmd.BuildDirectory
 	}
 
-	if CachedBuildDir == "" {
+	if cachedBuildDir == "" {
 		if dir, err := os.Getwd(); err == nil {
-			CachedBuildDir = path.Join(dir, cmd.BuildDirectory)
+			cachedBuildDir = path.Join(dir, cmd.BuildDirectory)
 		}
-		CachedBuildDir = cmd.BuildDirectory
+		cachedBuildDir = cmd.BuildDirectory
 	}
 
-	return CachedBuildDir
+	return cachedBuildDir
 }
 
 func getTargetBuildArchive(config Config, cmd CommandLine) string {

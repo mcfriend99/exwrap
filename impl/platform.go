@@ -1,4 +1,5 @@
-// Copied from golang internal/platform module.
+// copied from golang internal/platform module.
+
 package impl
 
 type OsArchInfo struct {

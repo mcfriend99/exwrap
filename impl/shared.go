@@ -10,24 +10,24 @@ import (
 	"runtime"
 )
 
-var CachedInstallExtractDir string = ""
-var CachedInstallDir string = ""
-var CachedLaunchCommand []string = []string{}
+var cachedInstallExtractDir string = ""
+var cachedInstallDir string = ""
+var cachedLaunchCommand []string = []string{}
 
 func GetInstallExtractDir() string {
-	if CachedInstallExtractDir == "" {
+	if cachedInstallExtractDir == "" {
 		if dir, err := os.Getwd(); err == nil {
 			if runtime.GOOS == "windows" {
-				CachedInstallExtractDir = path.Join(dir, WinTmpExtractDir)
+				cachedInstallExtractDir = path.Join(dir, WinTmpExtractDir)
 			} else {
-				CachedInstallExtractDir = path.Join(dir, TmpExtractDir)
+				cachedInstallExtractDir = path.Join(dir, TmpExtractDir)
 			}
 		} else {
-			CachedInstallExtractDir = WinTmpExtractDir
+			cachedInstallExtractDir = WinTmpExtractDir
 		}
 	}
 
-	return CachedInstallExtractDir
+	return cachedInstallExtractDir
 }
 
 func GetSelfInstallExtractFile() string {
@@ -43,26 +43,26 @@ func GetInstallExtractFile() string {
 }
 
 func GetInstallDir(installPath string) string {
-	if CachedInstallDir == "" {
+	if cachedInstallDir == "" {
 		if filepath.IsAbs(installPath) {
-			CachedInstallDir = installPath
+			cachedInstallDir = installPath
 		} else if runtime.GOOS == "windows" {
 			if home, err := os.UserHomeDir(); err == nil {
-				CachedInstallDir = path.Join(filepath.VolumeName(home), "Program Files", installPath)
+				cachedInstallDir = path.Join(filepath.VolumeName(home), "Program Files", installPath)
 			}
 		} else {
 			if home, err := os.UserHomeDir(); err == nil {
-				CachedInstallDir = filepath.Join(home, installPath)
+				cachedInstallDir = filepath.Join(home, installPath)
 			}
 		}
 
 		// if it is still empty, default to as is.
-		if CachedInstallDir == "" {
-			CachedInstallDir = installPath
+		if cachedInstallDir == "" {
+			cachedInstallDir = installPath
 		}
 	}
 
-	return CachedInstallDir
+	return cachedInstallDir
 }
 
 func FileExists(filename string) bool {
@@ -74,15 +74,15 @@ func FileExists(filename string) bool {
 }
 
 func GetAppDir() string {
-	if CachedAppDir == "" {
+	if cachedAppDir == "" {
 		if ex, err := os.Executable(); err == nil {
-			CachedAppDir = filepath.Dir(ex)
+			cachedAppDir = filepath.Dir(ex)
 		} else {
 			log.Fatalln("Failed to get application directory")
 		}
 	}
 
-	return CachedAppDir
+	return cachedAppDir
 }
 
 func GetAppName() string {
@@ -99,14 +99,14 @@ func GetLaunchScript(installPath string) string {
 }
 
 func GetLaunchCommand(installPath string) []string {
-	if len(CachedLaunchCommand) == 0 {
+	if len(cachedLaunchCommand) == 0 {
 		launchFile := GetLaunchScript(installPath)
 		if data, err := os.ReadFile(launchFile); err == nil {
-			_ = json.Unmarshal(data, &CachedLaunchCommand)
+			_ = json.Unmarshal(data, &cachedLaunchCommand)
 		}
 	}
 
-	return CachedLaunchCommand
+	return cachedLaunchCommand
 }
 
 func GetAbsoluteCommandProgram(cmd string, isDarwin bool) string {
