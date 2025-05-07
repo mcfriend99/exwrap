@@ -65,14 +65,24 @@ func generateAttachments(config Config) map[string]string {
 	for k, v := range makeAttachements(config, listFiles(config.Root)) {
 		attachments[v] = k
 	}
+	
 	for dir := range config.ExtraDirectories {
-		for k, v := range makeAttachements(config, listFiles(dir)) {
-			attachments[v] = k
+		if _, err := os.Stat(dir); os.IsExist(err) {
+			for k, v := range makeAttachements(config, listFiles(dir)) {
+				attachments[v] = k
+			}
+		} else {
+			log.Printf("Extra directory %s does not exist, skipping...\n", dir)
 		}
 	}
+
 	for file := range config.ExtraFiles {
-		for k, v := range makeAttachements(config, []string{file}) {
-			attachments[v] = k
+		if _, err := os.Stat(file); os.IsExist(err) {
+			for k, v := range makeAttachements(config, []string{file}) {
+				attachments[v] = k
+			}
+		} else {
+			log.Printf("Extra file %s does not exist, skipping...\n", file)
 		}
 	}
 
@@ -82,6 +92,8 @@ func generateAttachments(config Config) map[string]string {
 func Generate(config Config, cmd CommandLine) string {
 	// ensure we're trying to build a supported os/arch combination.
 	failFormat := "Unsupported Os/Arch combination: %s/%s"
+	rootNotFoundFormat := "Unsupported Os/Arch combination: %s/%s"
+
 	if combo, ok := BuildCombinations[OSArch{config.TargetOs, config.TargetArch}]; ok {
 
 		// For now, we're only supporting first-class build targets.
@@ -91,6 +103,10 @@ func Generate(config Config, cmd CommandLine) string {
 		}
 	} else {
 		log.Fatalf(failFormat, config.TargetOs, config.TargetArch)
+	}
+
+	if _, err := os.Stat(config.Root); os.IsNotExist(err) {
+		log.Fatalf(rootNotFoundFormat, config.TargetOs, config.TargetArch)
 	}
 
 	_ = os.RemoveAll(getBuildDir(cmd))

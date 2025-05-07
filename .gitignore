@@ -2,3 +2,5 @@
 /exwrap
 /pkg/
 /exwrap.json
+.DS_Store
+/.idea
