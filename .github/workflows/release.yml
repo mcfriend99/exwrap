@@ -10,6 +10,12 @@ jobs:
       matrix:
         os: [darwin, linux, windows]
         arch: [386, amd64, arm, arm64]
+        exclude:
+          # excludes 386 and arm on darwin
+          - os: darwin
+            arch: 386
+          - os: darwin
+            arch: arm
       fail-fast: false
     runs-on: ubuntu-latest
     permissions:
@@ -28,18 +34,18 @@ jobs:
       - name: Build
         run: |
             ./scripts/build.sh
-      - name: Generate Artifacts
-        if: '!cancelled()'
-        uses: actions/upload-artifact@v4
-        with:
-          name: exwrap-${{ matrix.os }}-${{ matrix.arch }}
-          path: ${{github.workspace}}/build/${{ matrix.os }}/${{ matrix.arch }}
+      # - name: Generate Artifacts
+      #   if: '!cancelled()'
+      #   uses: actions/upload-artifact@v4
+      #   with:
+      #     name: exwrap-${{ matrix.os }}-${{ matrix.arch }}
+      #     path: ${{github.workspace}}/build/${{ matrix.os }}/${{ matrix.arch }}
       - name: Upload Artifact to Release
         uses: actions/upload-release-asset@v1.0.1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ github.event.release.upload_url }}
-          asset_path: exwrap-${{ matrix.os }}-${{ matrix.arch }}.zip
+          asset_path: ${{github.workspace}}/build/${{ matrix.os }}/${{ matrix.arch }}
           asset_name: exwrap-${{ github.event.release.tag_name }}-${{ matrix.os }}-${{ matrix.arch }}.zip
           asset_content_type: application/zip
