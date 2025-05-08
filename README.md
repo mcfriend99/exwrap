@@ -1,6 +1,6 @@
 # ExWrap
 
-A general purpose executable wrapper that can turn any application written in any programming language into an exectuable file.
+A general purpose executable wrapper that can turn any application written in any programming language into an executable file.
 
 ## Why?
 
